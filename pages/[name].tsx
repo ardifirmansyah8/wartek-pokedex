@@ -1,11 +1,13 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { Tabs, Tab, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 
 import { usePokemonDetail } from "../hooks/usePokemon";
+import ProgressBar from "../components/ProgressBar";
+import Loader from "../components/Loader";
 
 const typeColor = {
   grass: "bg-green-500",
@@ -33,17 +35,13 @@ const PokemonPage: NextPage = () => {
 
   const { detail, getPokemonDetail } = usePokemonDetail();
 
-  const [activeTab, setActiveTab] = useState(0);
-
   useEffect(() => {
     if (router.query.name) getPokemonDetail(router.query.name as string);
   }, [router.query.name]);
 
   if (!detail) {
-    return null;
+    return <Loader />;
   }
-
-  console.log(detail);
 
   return (
     <div className="m-auto max-w-xl">
@@ -82,13 +80,13 @@ const PokemonPage: NextPage = () => {
           <Tabs>
             <TabList className="flex border-none">
               <Tab
-                selectedClassName="border-b-2 border-b-blue-400 text-black pb-3"
+                selectedClassName="border-b-2 border-b-blue-400 !text-black pb-3"
                 className="mr-3 cursor-pointer text-sm font-bold text-gray-400 outline-0"
               >
                 About
               </Tab>
               <Tab
-                selectedClassName="border-b-2 border-b-blue-400 text-black pb-3"
+                selectedClassName="border-b-2 border-b-blue-400 !text-black pb-3"
                 className="cursor-pointer text-sm font-bold text-gray-400 outline-0"
               >
                 Base Stats
@@ -115,19 +113,14 @@ const PokemonPage: NextPage = () => {
             </TabPanel>
             <TabPanel className="mt-4">
               {detail.stats.map((stat) => (
-                <div className="mb-4 ">
+                <div key={stat.stat.name} className="mb-4 ">
                   <div className="mb-2 flex justify-between text-sm">
                     <div className="capitalize text-gray-400">
                       {stat.stat.name}
                     </div>
                     <div>{stat.base_stat}</div>
                   </div>
-                  <div className="h-2 w-full rounded bg-gray-300">
-                    <div
-                      style={{ width: `${(stat.base_stat / 255) * 100}%` }}
-                      className="h-full rounded bg-blue-500"
-                    />
-                  </div>
+                  <ProgressBar stat={stat.base_stat} />
                 </div>
               ))}
             </TabPanel>

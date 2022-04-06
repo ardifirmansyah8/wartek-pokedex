@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { PokemonDetail, PokemonList, PokemonType } from "../types/Pokemon";
 
-export const usePokemon = () => {
+export const usePokemonList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [pokemon, setPokemon] = useState([]);
@@ -15,12 +16,44 @@ export const usePokemon = () => {
         setTotal(data.count);
         setNextPage(data.next);
         const results = data.results;
-        const promisesArray = results.map((result) => {
+        const promisesArray = results.map((result: PokemonList) => {
           return fetch(result.url).then((response) => response.json());
         });
         return Promise.all(promisesArray);
       })
-      .then((data) => setPokemon([...pokemon, ...data]))
+      .then((data) => {
+        setPokemon(nextPage ? [...pokemon, ...data] : data);
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        console.error(e);
+        setIsLoading(false);
+      });
+  };
+
+  const getPokemonFilterByType = (type: string) => {
+    console.log(type);
+    setIsLoading(true);
+
+    fetch("https://pokeapi.co/api/v2/type/" + type)
+      .then((response) => response.json())
+      .then((data) => {
+        const results = data.pokemon;
+        setTotal(results.length);
+        setNextPage("");
+        const promisesArray = results.map(
+          (result: { pokemon: PokemonList }) => {
+            return fetch(result.pokemon.url).then((response) =>
+              response.json()
+            );
+          }
+        );
+        return Promise.all(promisesArray);
+      })
+      .then((data) => {
+        setPokemon(data);
+        setIsLoading(false);
+      })
       .catch((e) => {
         console.error(e);
         setIsLoading(false);
@@ -37,12 +70,13 @@ export const usePokemon = () => {
     pokemon,
     nextPage,
     getPokemon,
+    getPokemonFilterByType,
   };
 };
 
 export const usePokemonDetail = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [detail, setDetail] = useState(null);
+  const [detail, setDetail] = useState<PokemonDetail>(null);
 
   const getPokemonDetail = (pokemon: string) => {
     setIsLoading(true);
@@ -63,4 +97,25 @@ export const usePokemonDetail = () => {
     detail,
     getPokemonDetail,
   };
+};
+
+export const usePokemonType = () => {
+  const [types, setTypes] = useState<PokemonType[]>([]);
+
+  const getPokemonTypes = () => {
+    fetch("https://pokeapi.co/api/v2/type")
+      .then((response) => response.json())
+      .then((data) => {
+        setTypes(data.results);
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
+
+  useEffect(() => {
+    getPokemonTypes();
+  }, []);
+
+  return { types };
 };
