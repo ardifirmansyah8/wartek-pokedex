@@ -1,6 +1,8 @@
 import { NextPage } from "next";
-import { usePokemon } from "../hooks/usePokemon";
 import InfiniteScroll from "react-infinite-scroller";
+import { useRouter } from "next/router";
+
+import { usePokemon } from "../hooks/usePokemon";
 
 const typeColor = {
   grass: "bg-green-500",
@@ -25,25 +27,27 @@ const typeColor = {
 
 const IndexPage: NextPage = () => {
   const { isLoading, total, pokemon, nextPage, getPokemon } = usePokemon();
+  const router = useRouter();
 
   return (
-    <div className="m-auto max-w-lg py-4">
+    <div className="m-auto max-w-xl py-4">
       <h1 className="mb-4 text-lg font-bold">Pokemon ({total})</h1>
 
       <InfiniteScroll
         initialLoad={false}
         pageStart={0}
         loadMore={getPokemon}
-        hasMore={nextPage}
+        hasMore={Boolean(nextPage)}
         threshold={10}
       >
         <div className="grid grid-cols-2 gap-4">
           {pokemon.map((data) => (
             <div
               key={data.id}
-              className={`flex flex-col rounded-lg border bg-opacity-50 p-4 ${
+              className={`flex flex-col rounded-2xl bg-opacity-50 p-4 ${
                 typeColor[data.types[0].type.name]
               } cursor-pointer`}
+              onClick={() => router.push("./" + data.name)}
             >
               <img
                 src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${data.id}.png`}
@@ -54,7 +58,7 @@ const IndexPage: NextPage = () => {
               <div className="flex gap-1">
                 {data.types.map((type) => (
                   <div
-                    key={data.id + type}
+                    key={data.id + type.type.name}
                     className={`rounded-xl px-2 py-0.5 text-xs text-white ${
                       typeColor[type.type.name]
                     }`}

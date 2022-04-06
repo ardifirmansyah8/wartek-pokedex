@@ -39,3 +39,28 @@ export const usePokemon = () => {
     getPokemon,
   };
 };
+
+export const usePokemonDetail = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [detail, setDetail] = useState(null);
+
+  const getPokemonDetail = (pokemon: string) => {
+    setIsLoading(true);
+
+    fetch("https://pokeapi.co/api/v2/pokemon/" + pokemon)
+      .then((response) => response.json())
+      .then((data) => {
+        setDetail(data);
+      })
+      .catch((e) => {
+        console.error(e);
+        setIsLoading(false);
+      });
+  };
+
+  return {
+    isLoading,
+    detail,
+    getPokemonDetail,
+  };
+};
